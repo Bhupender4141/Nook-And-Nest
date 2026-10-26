@@ -1,0 +1,247 @@
+/* Nook & Nest — front-end e-commerce demo. No real payments or backend. */
+"use strict";
+
+const products = [
+  {id:1,name:"Sculpted Stoneware Vase",category:"Decor",price:1299,rating:"4.9",tag:"BEST LOVED",bg:"#e8e0d3",art:"vase",description:"A softly sculpted vase for fresh or dried stems."},
+  {id:2,name:"Evening Glow Lamp",category:"Lighting",price:2499,rating:"4.8",tag:"NEW",bg:"#e9dfc8",art:"lamp",description:"Warm, gentle light for slow evenings."},
+  {id:3,name:"Sunday Woven Throw",category:"Textiles",price:1899,rating:"4.9",tag:"",bg:"#e4d8c6",art:"throw",description:"A textured throw made for sofa-side lounging."},
+  {id:4,name:"Everyday Clay Mug",category:"Tableware",price:499,rating:"4.7",tag:"SMALL JOY",bg:"#e8e2d7",art:"mug",description:"Your new favourite mug for tea or coffee."},
+  {id:5,name:"Quiet Moments Candle",category:"Decor",price:699,rating:"4.8",tag:"",bg:"#e6dfd2",art:"candle",description:"A simple candle to set a calmer mood."},
+  {id:6,name:"Gathering Bowl",category:"Tableware",price:899,rating:"4.6",tag:"",bg:"#e6e0d5",art:"bowl",description:"A versatile bowl for serving or styling."},
+  {id:7,name:"Little Landscape Print",category:"Decor",price:1499,rating:"4.9",tag:"LIMITED",bg:"#e8dfd2",art:"frame",description:"An earthy art print to bring a wall to life."},
+  {id:8,name:"Sage Soft Cushion",category:"Textiles",price:999,rating:"4.8",tag:"",bg:"#dfe2d7",art:"pillow",description:"A soft accent cushion in a restful sage tone."}
+];
+
+const $ = (selector) => document.querySelector(selector);
+const productGrid = $("#product-grid");
+const searchInput = $("#search-input");
+const sortSelect = $("#sort-select");
+const categoryFilters = $("#category-filters");
+const resultsCount = $("#results-count");
+const emptyState = $("#empty-state");
+const cartDrawer = $("#cart-drawer");
+const overlay = $("#overlay");
+const cartItems = $("#cart-items");
+const cartEmpty = $("#cart-empty");
+const cartSummary = $("#cart-summary");
+const toast = $("#toast");
+
+let activeCategory = "All";
+let cart = loadCart();
+let toastTimeout;
+
+function loadCart() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("nookNestCart") || "[]");
+    if (!Array.isArray(saved)) return [];
+    return saved.filter(item => products.some(product => product.id === item.id) &&
+      Number.isInteger(item.qty) && item.qty > 0)
+      .map(item => ({ id: item.id, qty: Math.min(item.qty, 99) }));
+  } catch {
+    return [];
+  }
+}
+
+function saveCart() {
+  try {
+    localStorage.setItem("nookNestCart", JSON.stringify(cart));
+  } catch {
+    showToast("Your browser could not save the bag for next time.");
+  }
+}
+
+function formatPrice(value) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency", currency: "INR", maximumFractionDigits: 0
+  }).format(value);
+}
+
+function artMarkup(art) {
+  return `<div class="product-art art-${art}" aria-hidden="true"><span class="shape"></span></div>`;
+}
+
+function renderProducts() {
+  const query = searchInput.value.trim().toLowerCase();
+  let visible = products.filter(product => {
+    const matchesCategory = activeCategory === "All" || product.category === activeCategory;
+    const searchable = `${product.name} ${product.category} ${product.description}`.toLowerCase();
+    return matchesCategory && searchable.includes(query);
+  });
+
+  if (sortSelect.value === "price-low") visible.sort((a, b) => a.price - b.price);
+  if (sortSelect.value === "price-high") visible.sort((a, b) => b.price - a.price);
+  if (sortSelect.value === "name") visible.sort((a, b) => a.name.localeCompare(b.name));
+
+  productGrid.innerHTML = visible.map(product => `
+    <article class="product-card">
+      <div class="product-visual" style="--product-bg:${product.bg}">
+        ${product.tag ? `<span class="product-tag">${product.tag}</span>` : ""}
+        ${artMarkup(product.art)}
+      </div>
+      <div class="product-info">
+        <div class="product-info-top">
+          <div><h3 class="product-name">${product.name}</h3><p class="product-category">${product.category}</p></div>
+          <span class="product-price">${formatPrice(product.price)}</span>
+        </div>
+        <div class="product-bottom"><span class="product-rating">★ ${product.rating} <span>· Demo rating</span></span>
+          <button class="add-button" data-add="${product.id}" aria-label="Add ${product.name} to bag">+ Add to bag</button>
+        </div>
+      </div>
+    </article>`).join("");
+
+  resultsCount.textContent = `${visible.length} ${visible.length === 1 ? "piece" : "pieces"}`;
+  emptyState.hidden = visible.length !== 0;
+  productGrid.hidden = visible.length === 0;
+}
+
+function getProduct(id) {
+  return products.find(product => product.id === id);
+}
+
+function addToCart(id) {
+  const found = cart.find(item => item.id === id);
+  if (found) {
+    if (found.qty >= 99) return showToast("Maximum quantity reached.");
+    found.qty += 1;
+  } else {
+    cart.push({ id, qty: 1 });
+  }
+  saveCart();
+  renderCart();
+  showToast(`${getProduct(id).name} added to your bag.`);
+}
+
+function changeQuantity(id, delta) {
+  const item = cart.find(entry => entry.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) cart = cart.filter(entry => entry.id !== id);
+  if (item.qty > 99) item.qty = 99;
+  saveCart();
+  renderCart();
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(item => item.id !== id);
+  saveCart();
+  renderCart();
+  showToast("Item removed from your bag.");
+}
+
+function renderCart() {
+  const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+  const subtotal = cart.reduce((sum, item) => sum + getProduct(item.id).price * item.qty, 0);
+  $("#cart-count").textContent = totalQty;
+  $("#drawer-count").textContent = `(${totalQty})`;
+  $("#cart-subtotal").textContent = formatPrice(subtotal);
+  cartEmpty.hidden = cart.length !== 0;
+  cartSummary.hidden = cart.length === 0;
+  cartItems.innerHTML = cart.map(item => {
+    const product = getProduct(item.id);
+    return `<article class="cart-line">
+      <div class="cart-thumb" style="--product-bg:${product.bg}">${artMarkup(product.art)}</div>
+      <div><h3>${product.name}</h3><p>${formatPrice(product.price)} each</p>
+        <div class="qty-control">
+          <button data-qty="${product.id}" data-delta="-1" aria-label="Decrease ${product.name} quantity">−</button>
+          <span>${item.qty}</span>
+          <button data-qty="${product.id}" data-delta="1" aria-label="Increase ${product.name} quantity">+</button>
+        </div>
+        <button class="remove-item" data-remove="${product.id}">Remove</button>
+      </div>
+      <span class="cart-line-price">${formatPrice(product.price * item.qty)}</span>
+    </article>`;
+  }).join("");
+}
+
+function openCart() {
+  cartDrawer.classList.add("open");
+  cartDrawer.setAttribute("aria-hidden", "false");
+  overlay.hidden = false;
+  document.body.style.overflow = "hidden";
+  $("#cart-close").focus();
+}
+
+function closeCart() {
+  cartDrawer.classList.remove("open");
+  cartDrawer.setAttribute("aria-hidden", "true");
+  overlay.hidden = true;
+  document.body.style.overflow = "";
+  $("#cart-toggle").focus();
+}
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove("show"), 2600);
+}
+
+categoryFilters.addEventListener("click", event => {
+  const button = event.target.closest("[data-category]");
+  if (!button) return;
+  activeCategory = button.dataset.category;
+  categoryFilters.querySelectorAll(".filter-chip").forEach(chip => {
+    const active = chip === button;
+    chip.classList.toggle("active", active);
+    chip.setAttribute("aria-pressed", String(active));
+  });
+  renderProducts();
+});
+
+searchInput.addEventListener("input", renderProducts);
+sortSelect.addEventListener("change", renderProducts);
+
+productGrid.addEventListener("click", event => {
+  const button = event.target.closest("[data-add]");
+  if (button) addToCart(Number(button.dataset.add));
+});
+
+cartItems.addEventListener("click", event => {
+  const quantityButton = event.target.closest("[data-qty]");
+  const removeButton = event.target.closest("[data-remove]");
+  if (quantityButton) changeQuantity(Number(quantityButton.dataset.qty), Number(quantityButton.dataset.delta));
+  if (removeButton) removeFromCart(Number(removeButton.dataset.remove));
+});
+
+$("#cart-toggle").addEventListener("click", openCart);
+$("#cart-close").addEventListener("click", closeCart);
+overlay.addEventListener("click", closeCart);
+$("#continue-shopping").addEventListener("click", closeCart);
+
+$("#search-toggle").addEventListener("click", () => {
+  $("#shop").scrollIntoView({ behavior: "smooth" });
+  window.setTimeout(() => searchInput.focus(), 350);
+});
+
+$("#reset-filters").addEventListener("click", () => {
+  activeCategory = "All";
+  searchInput.value = "";
+  sortSelect.value = "featured";
+  categoryFilters.querySelectorAll(".filter-chip").forEach(chip => {
+    const active = chip.dataset.category === "All";
+    chip.classList.toggle("active", active);
+    chip.setAttribute("aria-pressed", String(active));
+  });
+  renderProducts();
+});
+
+$("#checkout-button").addEventListener("click", () => {
+  showToast("Demo checkout: connect a secure payment provider for real orders.");
+});
+
+$("#newsletter-form").addEventListener("submit", event => {
+  event.preventDefault();
+  const email = $("#email-input").value.trim();
+  if (!email) return;
+  $("#newsletter-message").textContent = "Thanks for joining us! This demo does not send or store emails.";
+  $("#newsletter-message").classList.add("success-message");
+  $("#newsletter-form").reset();
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape" && cartDrawer.classList.contains("open")) closeCart();
+});
+
+$("#year").textContent = new Date().getFullYear();
+renderProducts();
+renderCart();

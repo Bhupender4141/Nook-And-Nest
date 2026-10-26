@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Nook & Nest — thoughtfully chosen home décor for cozy spaces.">
+  <title>Nook & Nest | Home, made yours</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="announcement">A little more cozy, a little more you. <span>Free shipping on orders over ₹1,999</span></div>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="Nook and Nest home"><span class="brand-mark">N<span>✦</span></span><span>Nook <i>&</i> Nest<small>THE ART OF FEELING AT HOME</small></span></a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="#shop">Shop all</a><a href="#story">Our story</a><a href="#newsletter">Journal</a>
+    </nav>
+    <div class="header-actions">
+      <button class="icon-button" id="search-toggle" aria-label="Focus search">⌕</button>
+      <button class="cart-button" id="cart-toggle" aria-label="Open shopping bag">Bag <span id="cart-count">0</span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">SLOW LIVING · THOUGHTFUL DETAILS</p>
+        <h1>Make room for<br><em>the good things.</em></h1>
+        <p class="hero-text">Considered pieces for everyday rituals. Warm textures, natural tones, and little details that make a space feel like yours.</p>
+        <a class="button button-dark" href="#shop">Explore the collection <span>↗</span></a>
+        <div class="hero-note"><span class="note-line"></span> Designed for real life, made to be lived in.</div>
+      </div>
+      <div class="hero-art" role="img" aria-label="Warm neutral living room illustration">
+        <div class="sun"></div><div class="art-frame"><div class="art-sun"></div><div class="art-hill hill-one"></div><div class="art-hill hill-two"></div></div>
+        <div class="plant"><span></span><span></span><span></span><span></span><b></b></div>
+        <div class="sofa"><div class="sofa-back"></div><div class="sofa-seat"></div><div class="sofa-arm left"></div><div class="sofa-arm right"></div><div class="cushion cushion-one"></div><div class="cushion cushion-two"></div><div class="sofa-leg leg-one"></div><div class="sofa-leg leg-two"></div></div>
+        <div class="side-table"><div class="table-top"></div><div class="table-leg"></div><div class="vase"></div><div class="vase-stem"></div></div>
+        <div class="rug"></div><div class="art-label">A softer kind of everyday <span>✳</span></div>
+      </div>
+    </section>
+
+    <section class="trust-strip" aria-label="Our values">
+      <div><span>✳</span> Thoughtfully sourced</div><div><span>⌂</span> Made for everyday</div><div><span>♡</span> Small details, big feeling</div>
+    </section>
+
+    <section class="shop-section" id="shop">
+      <div class="section-heading">
+        <div><p class="eyebrow">THE COLLECTION</p><h2>Find your <em>favourite corner.</em></h2></div>
+        <p>Pieces with personality, made to mix, match, and make your own.</p>
+      </div>
+      <div class="shop-tools">
+        <label class="search-wrap"><span>⌕</span><input id="search-input" type="search" placeholder="Search pieces..." aria-label="Search products"></label>
+        <div class="category-filters" id="category-filters" aria-label="Filter by category">
+          <button class="filter-chip active" data-category="All">All pieces</button>
+          <button class="filter-chip" data-category="Decor">Decor</button>
+          <button class="filter-chip" data-category="Lighting">Lighting</button>
+          <button class="filter-chip" data-category="Textiles">Textiles</button>
+          <button class="filter-chip" data-category="Tableware">Tableware</button>
+        </div>
+        <label class="sort-label">Sort by
+          <select id="sort-select" aria-label="Sort products">
+            <option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A–Z</option>
+          </select>
+        </label>
+      </div>
+      <div class="results-line"><span id="results-count">8 pieces</span><span>Collected with care <span class="tiny-star">✳</span></span></div>
+      <div class="product-grid" id="product-grid" aria-live="polite"></div>
+      <div class="empty-state" id="empty-state" hidden><span>⌕</span><h3>No pieces found</h3><p>Try another search or choose a different category.</p><button class="button button-outline" id="reset-filters">Reset filters</button></div>
+    </section>
+
+    <section class="story-section" id="story">
+      <div class="story-art"><div class="story-circle"></div><div class="story-vase"></div><div class="story-leaf leaf-a"></div><div class="story-leaf leaf-b"></div><div class="story-leaf leaf-c"></div><div class="story-shelf"></div><span>HOME IS A FEELING</span></div>
+      <div class="story-copy"><p class="eyebrow">A NOTE FROM NOOK & NEST</p><h2>Not just a space.<br><em>Your kind of place.</em></h2><p>We believe a home comes together slowly: a lamp that makes evenings softer, a mug you always reach for, a throw that lives on the sofa. Our collection is built around those small, meaningful things.</p><a href="#shop" class="text-link">Meet your next favourite thing <span>↗</span></a></div>
+    </section>
+
+    <section class="newsletter" id="newsletter">
+      <div><p class="eyebrow">LETTERS FROM HOME</p><h2>A little inspiration,<br><em>delivered gently.</em></h2></div>
+      <form id="newsletter-form" class="newsletter-form">
+        <label for="email-input">Your email address</label>
+        <div class="email-row"><input id="email-input" type="email" placeholder="you@example.com" required><button type="submit" aria-label="Subscribe">Join us ↗</button></div>
+        <p id="newsletter-message" class="form-message">By joining, you agree to receive occasional notes from us.</p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="site-footer"><a class="footer-brand" href="#">Nook <i>&</i> Nest</a><span>Thoughtful things for the spaces we love.</span><span>© <span id="year"></span> Nook & Nest · Student demo project</span></footer>
+
+  <div class="overlay" id="overlay" hidden></div>
+  <aside class="cart-drawer" id="cart-drawer" aria-label="Shopping bag" aria-hidden="true">
+    <div class="drawer-header"><div><p class="eyebrow">YOUR LITTLE FINDS</p><h2>Your bag <span id="drawer-count">(0)</span></h2></div><button class="close-drawer" id="cart-close" aria-label="Close shopping bag">×</button></div>
+    <div class="cart-items" id="cart-items"></div>
+    <div class="cart-empty" id="cart-empty"><span>♡</span><h3>Your bag is taking a nap.</h3><p>Add something lovely to wake it up.</p><button class="button button-dark" id="continue-shopping">Explore the collection</button></div>
+    <div class="cart-summary" id="cart-summary"><div><span>Subtotal</span><strong id="cart-subtotal">₹0</strong></div><p>Shipping and taxes calculated at checkout.</p><button class="button button-dark checkout-button" id="checkout-button">Continue to checkout <span>↗</span></button><small>Demo checkout only — no payment will be collected.</small></div>
+  </aside>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
